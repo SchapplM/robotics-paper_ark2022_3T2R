@@ -36,3 +36,4 @@ Thumbs.db
 *.mp4
 *.mat
 *.orig
+ark_dimsynth_data_dir.m

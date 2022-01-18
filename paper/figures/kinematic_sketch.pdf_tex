@@ -1,0 +1,113 @@
+%% Creator: Inkscape inkscape 0.92.3, www.inkscape.org
+%% PDF/EPS/PS + LaTeX output extension by Johan Engelen, 2010
+%% Accompanies image file 'kinematic_sketch.pdf' (pdf, eps, ps)
+%%
+%% To include the image in your LaTeX document, write
+%%   \input{<filename>.pdf_tex}
+%%  instead of
+%%   \includegraphics{<filename>.pdf}
+%% To scale the image, write
+%%   \def\svgwidth{<desired width>}
+%%   \input{<filename>.pdf_tex}
+%%  instead of
+%%   \includegraphics[width=<desired width>]{<filename>.pdf}
+%%
+%% Images with a different path to the parent latex file can
+%% be accessed with the `import' package (which may need to be
+%% installed) using
+%%   \usepackage{import}
+%% in the preamble, and then including the image with
+%%   \import{<path to file>}{<filename>.pdf_tex}
+%% Alternatively, one can specify
+%%   \graphicspath{{<path to file>/}}
+%% 
+%% For more information, please see info/svg-inkscape on CTAN:
+%%   http://tug.ctan.org/tex-archive/info/svg-inkscape
+%%
+\begingroup%
+  \makeatletter%
+  \providecommand\color[2][]{%
+    \errmessage{(Inkscape) Color is used for the text in Inkscape, but the package 'color.sty' is not loaded}%
+    \renewcommand\color[2][]{}%
+  }%
+  \providecommand\transparent[1]{%
+    \errmessage{(Inkscape) Transparency is used (non-zero) for the text in Inkscape, but the package 'transparent.sty' is not loaded}%
+    \renewcommand\transparent[1]{}%
+  }%
+  \providecommand\rotatebox[2]{#2}%
+  \newcommand*\fsize{\dimexpr\f@size pt\relax}%
+  \newcommand*\lineheight[1]{\fontsize{\fsize}{#1\fsize}\selectfont}%
+  \ifx\svgwidth\undefined%
+    \setlength{\unitlength}{325.98425197bp}%
+    \ifx\svgscale\undefined%
+      \relax%
+    \else%
+      \setlength{\unitlength}{\unitlength * \real{\svgscale}}%
+    \fi%
+  \else%
+    \setlength{\unitlength}{\svgwidth}%
+  \fi%
+  \global\let\svgwidth\undefined%
+  \global\let\svgscale\undefined%
+  \makeatother%
+  \begin{picture}(1,0.43478261)%
+    \lineheight{1}%
+    \setlength\tabcolsep{0pt}%
+    \put(0,0){\includegraphics[width=\unitlength,page=1]{kinematic_sketch.pdf}}%
+    \put(0.4700303,0.01401321){\color[rgb]{0,0,0}\makebox(0,0)[lt]{\lineheight{1.25}\smash{\begin{tabular}[t]{l}$\ks{0}$\end{tabular}}}}%
+    \put(0.34989195,0.23495162){\color[rgb]{0,0,0}\makebox(0,0)[lt]{\lineheight{1.25}\smash{\begin{tabular}[t]{l}$\ks{E}{:=}\ks{E_1}$\end{tabular}}}}%
+    \put(0.64621327,0.23966352){\color[rgb]{0,0,0}\makebox(0,0)[lt]{\lineheight{1.25}\smash{\begin{tabular}[t]{l}$\ks{C_1}$\end{tabular}}}}%
+    \put(0,0){\includegraphics[width=\unitlength,page=2]{kinematic_sketch.pdf}}%
+    \put(0.65530675,0.02621461){\color[rgb]{0,0,0}\makebox(0,0)[lt]{\lineheight{1.25}\smash{\begin{tabular}[t]{l}$\ks{A_1}$\end{tabular}}}}%
+    \put(0.51764613,0.36408841){\color[rgb]{0,0,0}\makebox(0,0)[lt]{\lineheight{1.25}\smash{\begin{tabular}[t]{l}$\ks{B_1}$\end{tabular}}}}%
+    \put(0,0){\includegraphics[width=\unitlength,page=3]{kinematic_sketch.pdf}}%
+    \put(0.36863455,0.09997695){\color[rgb]{0,0,0}\makebox(0,0)[lt]{\lineheight{1.25}\smash{\begin{tabular}[t]{l}$\ks{D}$\end{tabular}}}}%
+    \put(0,0){\includegraphics[width=\unitlength,page=4]{kinematic_sketch.pdf}}%
+    \put(0.56341295,0.01352973){\color[rgb]{0,0,0}\makebox(0,0)[lt]{\lineheight{1.25}\smash{\begin{tabular}[t]{l}$\trmat{0}{A_1}$\end{tabular}}}}%
+    \put(0,0){\includegraphics[width=\unitlength,page=5]{kinematic_sketch.pdf}}%
+    \put(0.66657626,0.14042855){\color[rgb]{0,0,0}\makebox(0,0)[lt]{\lineheight{1.25}\smash{\begin{tabular}[t]{l}$\trmat{A_1}{C_1}(\bm{q}_1)$\end{tabular}}}}%
+    \put(0,0){\includegraphics[width=\unitlength,page=6]{kinematic_sketch.pdf}}%
+    \put(0.42238538,0.36175906){\color[rgb]{0,0,0}\makebox(0,0)[lt]{\lineheight{1.25}\smash{\begin{tabular}[t]{l}$\trmat{B_1}{E}$\end{tabular}}}}%
+    \put(0,0){\includegraphics[width=\unitlength,page=7]{kinematic_sketch.pdf}}%
+    \put(0.45802489,0.18845957){\color[rgb]{0,0,0}\makebox(0,0)[lt]{\lineheight{1.25}\smash{\begin{tabular}[t]{l}$\trmat{D}{E_1}$\end{tabular}}}}%
+    \put(0,0){\includegraphics[width=\unitlength,page=8]{kinematic_sketch.pdf}}%
+    \put(0.46003683,0.08903222){\color[rgb]{0,0,0}\makebox(0,0)[lt]{\lineheight{1.25}\smash{\begin{tabular}[t]{l}$\trmat{0}{D}(\bm{x})$\end{tabular}}}}%
+    \put(0.52830675,0.1451007){\color[rgb]{0,0,0}\makebox(0,0)[lt]{\lineheight{1.25}\smash{\begin{tabular}[t]{l}$\Res_1$\end{tabular}}}}%
+    \put(0,0){\includegraphics[width=\unitlength,page=9]{kinematic_sketch.pdf}}%
+    \put(0.55864359,0.31871489){\color[rgb]{0,0,0}\makebox(0,0)[lt]{\lineheight{1.25}\smash{\begin{tabular}[t]{l}$\trmat{C_1}{B1}{:=}\bm{I}$\end{tabular}}}}%
+    \put(0.40187867,0.01396887){\color[rgb]{0,0,0}\makebox(0,0)[lt]{\lineheight{1.25}\smash{\begin{tabular}[t]{l}\textbf{(b)}\end{tabular}}}}%
+    \put(0,0){\includegraphics[width=\unitlength,page=10]{kinematic_sketch.pdf}}%
+    \put(0.00986025,0.01396886){\color[rgb]{0,0,0}\makebox(0,0)[lt]{\lineheight{1.25}\smash{\begin{tabular}[t]{l}\textbf{(a)}\end{tabular}}}}%
+    \put(0.02168634,0.15100353){\color[rgb]{0,0,0}\makebox(0,0)[lt]{\lineheight{1.25}\smash{\begin{tabular}[t]{l}R\end{tabular}}}}%
+    \put(0.010885,0.23662823){\color[rgb]{0,0,0}\makebox(0,0)[lt]{\lineheight{1.25}\smash{\begin{tabular}[t]{l}\underline{P}\end{tabular}}}}%
+    \put(0.02329248,0.28247841){\color[rgb]{0,0,0}\makebox(0,0)[lt]{\lineheight{1.25}\smash{\begin{tabular}[t]{l}U\end{tabular}}}}%
+    \put(0.03150936,0.31863259){\color[rgb]{0,0,0}\makebox(0,0)[lt]{\lineheight{1.25}\smash{\begin{tabular}[t]{l}R\end{tabular}}}}%
+    \put(0.05556083,0.39600674){\color[rgb]{0,0,0}\makebox(0,0)[lt]{\lineheight{1.25}\smash{\begin{tabular}[t]{l}$\ks{P}$\end{tabular}}}}%
+    \put(0.05251594,0.3589835){\color[rgb]{0,0,0}\makebox(0,0)[lt]{\lineheight{1.25}\smash{\begin{tabular}[t]{l}$\ks{E}$\end{tabular}}}}%
+    \put(0.26601292,0.38877968){\color[rgb]{0,0,0}\makebox(0,0)[lt]{\lineheight{1.25}\smash{\begin{tabular}[t]{l}$\ks{B_i}$\end{tabular}}}}%
+    \put(0,0){\includegraphics[width=\unitlength,page=11]{kinematic_sketch.pdf}}%
+    \put(0.17623066,0.09966097){\color[rgb]{0,0,0}\makebox(0,0)[lt]{\lineheight{1.25}\smash{\begin{tabular}[t]{l}$\ks{0}$\end{tabular}}}}%
+    \put(0.07363889,0.01693494){\color[rgb]{0,0,0}\makebox(0,0)[lt]{\lineheight{1.25}\smash{\begin{tabular}[t]{l}$\ks{W}$\end{tabular}}}}%
+    \put(0.14877313,0.20176042){\color[rgb]{0,0,0}\makebox(0,0)[lt]{\lineheight{1.25}\smash{\begin{tabular}[t]{l}$\ks{A_i}$\end{tabular}}}}%
+    \put(0,0){\includegraphics[width=\unitlength,page=12]{kinematic_sketch.pdf}}%
+    \put(0.94668327,0.04264379){\color[rgb]{0,0,0}\makebox(0,0)[lt]{\lineheight{1.25}\smash{\begin{tabular}[t]{l}$\ks{A_i}$\end{tabular}}}}%
+    \put(0,0){\includegraphics[width=\unitlength,page=13]{kinematic_sketch.pdf}}%
+    \put(0.86411272,0.0384972){\color[rgb]{0,0,0}\makebox(0,0)[lt]{\lineheight{1.25}\smash{\begin{tabular}[t]{l}$\ks{0}$\end{tabular}}}}%
+    \put(0,0){\includegraphics[width=\unitlength,page=14]{kinematic_sketch.pdf}}%
+    \put(0.84422089,0.26209315){\color[rgb]{0,0,0}\makebox(0,0)[lt]{\lineheight{1.25}\smash{\begin{tabular}[t]{l}$\ks{E_i}$\end{tabular}}}}%
+    \put(0.94996959,0.30459071){\color[rgb]{0,0,0}\makebox(0,0)[lt]{\lineheight{1.25}\smash{\begin{tabular}[t]{l}$\ks{B_i}$\end{tabular}}}}%
+    \put(0.66709452,0.3637455){\color[rgb]{0,0,0}\makebox(0,0)[lt]{\lineheight{1.25}\smash{\begin{tabular}[t]{l}$\ks{E_1}$\end{tabular}}}}%
+    \put(0,0){\includegraphics[width=\unitlength,page=15]{kinematic_sketch.pdf}}%
+    \put(0.88804984,0.20893645){\color[rgb]{0,0,0}\makebox(0,0)[lt]{\lineheight{1.25}\smash{\begin{tabular}[t]{l}$\trmat{A_i}{C_i}$\end{tabular}}}}%
+    \put(0,0){\includegraphics[width=\unitlength,page=16]{kinematic_sketch.pdf}}%
+    \put(0.74732271,0.08989335){\color[rgb]{0,0,0}\makebox(0,0)[lt]{\lineheight{1.25}\smash{\begin{tabular}[t]{l}$\trmat{0}{E_1}(\bm{q}_1)$\end{tabular}}}}%
+    \put(0,0){\includegraphics[width=\unitlength,page=17]{kinematic_sketch.pdf}}%
+    \put(0.86284088,0.38335332){\color[rgb]{0,0,0}\makebox(0,0)[lt]{\lineheight{1.25}\smash{\begin{tabular}[t]{l}$\Res_i$\end{tabular}}}}%
+    \put(0.9123508,0.34206654){\color[rgb]{0,0,0}\makebox(0,0)[lt]{\lineheight{1.25}\smash{\begin{tabular}[t]{l}$\trmat{B_i}{E_i}$\end{tabular}}}}%
+    \put(0,0){\includegraphics[width=\unitlength,page=18]{kinematic_sketch.pdf}}%
+    \put(0.90348986,0.08610314){\color[rgb]{0,0,0}\makebox(0,0)[lt]{\lineheight{1.25}\smash{\begin{tabular}[t]{l}$\trmat{0}{A_i}$\end{tabular}}}}%
+    \put(0.81438441,0.01396886){\color[rgb]{0,0,0}\makebox(0,0)[lt]{\lineheight{1.25}\smash{\begin{tabular}[t]{l}\textbf{(c)}\end{tabular}}}}%
+    \put(0,0){\includegraphics[width=\unitlength,page=19]{kinematic_sketch.pdf}}%
+    \put(0.90158615,0.1837384){\color[rgb]{0,0,0}\makebox(0,0)[lt]{\lineheight{1.25}\smash{\begin{tabular}[t]{l}$(\bm{q}_i)$\end{tabular}}}}%
+  \end{picture}%
+\endgroup%
