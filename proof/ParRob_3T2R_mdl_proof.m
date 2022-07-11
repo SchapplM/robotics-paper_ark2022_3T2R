@@ -18,12 +18,12 @@ if isempty(which('parroblib_path_init.m'))
 end
 this_dir = fileparts(which('ParRob_3T2R_mdl_proof.m'));
 addpath(fullfile(this_dir, '..'));
-if isempty(which('ark_dimsynth_data_dir'))
-  error(['You have to create a file ark_dimsynth_data_dir pointing to the ', ...
+if isempty(which('ark3T2R_dimsynth_data_dir'))
+  error(['You have to create a file ark3T2R_dimsynth_data_dir pointing to the ', ...
     'directory containing the results of the dimensional synthesis']);
 end
-resdirtotal = ark_dimsynth_data_dir();
-datadir = fullfile(fileparts(which('ark_dimsynth_data_dir.m')),'data');
+resdirtotal = ark3T2R_dimsynth_data_dir();
+datadir = fullfile(fileparts(which('ark3T2R_dimsynth_data_dir.m')),'data');
 if ~exist(fullfile(datadir, 'robot_groups.mat'), 'file')
   error('Run eval_figures_pareto_groups.m first');
 end

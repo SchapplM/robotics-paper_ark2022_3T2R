@@ -7,8 +7,10 @@ clear
 clc
 
 usr_cluster = true;
+usr_minmotion = false;
+nreps = 5; % Anzahl der Wiederholungen der Maßsynthese
 %% Optimierung aller Roboter für alle Aufgabentypen starten
-
+for i_rep = 1:nreps
 % Einstellungen der Optimierung
 Set = cds_settings_defaults(struct('DoF', logical([1 1 1 1 1 0])));
 Set.general.verbosity = 4;
@@ -21,10 +23,12 @@ Traj.X(:,4:5) = Traj.X(:,4:5) + 20*pi/180;
 Traj.XE(:,4:5) = Traj.XE(:,4:5) + 20*pi/180;
 
 % Debug: Nehme eine Aufgabe fast ohne Bewegungsspielraum
-% Traj.XD = Traj.XD * 0.1;
-% Traj.XDD = Traj.XDD * 0.1;
-% Traj.X = repmat(Traj.X(1,:), size(Traj.X,1),1)+cumtrapz(Traj.t, Traj.XD);
-% Traj.XE = Traj.X(Traj.IE,:);
+if usr_minmotion
+  Traj.XD = Traj.XD * 0.1;
+  Traj.XDD = Traj.XDD * 0.1;
+  Traj.X = repmat(Traj.X(1,:), size(Traj.X,1),1)+cumtrapz(Traj.t, Traj.XD);
+  Traj.XE = Traj.X(Traj.IE,:);
+end
 
 % Verschiebe die Aufgabe
 task_dim = (max(Traj.XE(:,1:3)) - min(Traj.XE(:,1:3)));
@@ -45,9 +49,9 @@ Set.structures.max_index_active_revolute = 1; % Nur aktives Gestellgelenk bei Dr
 Set.structures.max_index_active_prismatic = 3; % RP oder UP als Beginn der Beinkette erlauben
 % Parallel und auf Cluster
 Set.general.computing_cluster = usr_cluster; % Auf Cluster rechnen
-Set.general.computing_cluster_cores = 16;
+Set.general.computing_cluster_cores = 8;
 Set.general.cluster_maxrobotspernode = Set.general.computing_cluster_cores;
-Set.general.computing_cluster_max_time = 10*3600;
+Set.general.computing_cluster_max_time = 8*3600;
 % Debug: Auf bestimmten Cluster-Job warten (für bessere Startwerte)
 % Set.general.cluster_dependjobs = 8191909;
 
@@ -102,7 +106,21 @@ Set.optimization.base_morphology = true;
 Set.optimization.platform_morphology = true;
 Set.optimization.rotate_base = true;
 Set.optimization.ee_rotation = false;
+% Nicht-symmetrische Länge der Schubzylinder ermöglicht mehr Lösungen, aber
+% dafür unplausibler. Nehme daher symmetrische Länge.
+Set.optimization.joint_limits_symmetric_prismatic = true;
 
+% Benutze den Index aller Ergebnisse zum schnelleren Start
+Set.optimization.InitPopFromGlobalIndex = true;
+% Debug: Keine alten Ergebnisse laden, damit mehr Exploration passiert
+% Set.optimization.InitPopRatioOldResults = 0;;
+% Debuggen: Keine Prüfung der Funktionen (zum schnelleren Start)
+% Set.general.update_template_functions = true;
+% Debug: Bisherige Ergebnisse als Startwert nehmen (falls sie nicht schon
+% im Ergebnis-Ordner liegen)
+if ~usr_cluster
+  Set.optimization.result_dirs_for_init_pop = {ark3T2R_dimsynth_data_dir()};
+end
 n_instspcbodies = 2;
 Set.task.installspace = struct( ...
   'type', uint8(zeros(n_instspcbodies,1)), ... % Nummern der Geometrie-Typen, siehe Implementierung.
@@ -128,6 +146,17 @@ Set.task.installspace.type(2) =  uint8(2); % Zylinder
 Set.task.installspace.params(2,:) = p_Zylinder2;
 Set.task.installspace.links(2) = {0};  % Alle bewegten Teile des Roboters müssen im Bauraum sein
 
+% Zusätzliche Kugel oberhalb der Aufgabe. Verhindert, dass Lösungen sehr
+% weit ausladend werden und von oben bearbeiten. Könnte einer Einspannung
+% eines zu bearbeitenden Werkstücks entsprechen. Der Plattform ist auch
+% eine Kugel zugeordnet, die recht groß werden kann bei großer Plattform.
+% Die daraus resultierende Kollision ist gewünscht, um die Plattform klein
+% zu halten
+trajmean = mean(minmax2(Traj.XE(:,1:3)')'); %#ok<UDIM>
+trajmax = max(Traj.XE(:,1:3));
+Set.task.obstacles = struct( ...
+  'type', uint8(4), ... % Kugel
+  'params', [trajmean(1:2), trajmax(3)+0.4+0.3, 0.4]); % Mittelpunkt, Radius
 % Debug: Visualisierung der Aufgabe
 % cds_show_task(Traj, Set)
 % return
@@ -135,7 +164,7 @@ Set.task.installspace.links(2) = {0};  % Alle bewegten Teile des Roboters müsse
 % Debug: Nur einen Roboter erzeugen
 % Set.structures.whitelist = {'P5RPRRR8V1G9P8A1'}; % S5RPRRR2 'P5RPRRR8V1G9P8A1'
 % Set.structures.whitelist = {'P5PRRRR6V1G10P8A1'}; % 5PRUR senkrechte PR
-% Set.structures.whitelist = {'P5PRRRR4V1G10P8A1'};
+% Set.structures.whitelist = {'P5PRRRR4V1G1P8A1'};
 % Set.structures.whitelist = {'P5RRRRR6V1G9P8A4'};
 
 % Debug: Struktur einschränken
@@ -149,7 +178,10 @@ if Set.general.computing_cluster && length(Set.structures.whitelist) == 1
   warning('Es soll nur ein Roboter auf dem Cluster berechnet werden. Sicher?');
   pause(5); % Bedenkzeit
 end
-Set.optimization.optname = sprintf('ARK_3T2R_20220104_longrun');
+Set.optimization.optname = sprintf('ARK_3T2R_20220613_collsphere');
+if nreps > 1
+  Set.optimization.optname = [Set.optimization.optname, sprintf('_rep%d', i_rep)];
+end
 
 % Debug: Abgebrochenen Durchlauf abschließen
 Set.general.only_finish_aborted = false;
@@ -167,3 +199,7 @@ Set.general.regenerate_summary_only = false;
 % parroblib_update_template_functions({'P5PRRRR4V1G1P8A1'});
 
 cds_start(Set,Traj);
+if nreps > 1 && i_rep < nreps
+  pause(4);
+end
+end

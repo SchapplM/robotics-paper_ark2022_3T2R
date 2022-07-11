@@ -7,7 +7,7 @@
 clc
 clear
 OptName = 'ARK_3T2R_20220114_plfmorph';
-resdirtotal = ark_dimsynth_data_dir();
+resdirtotal = ark3T2R_dimsynth_data_dir();
 d1 = load(fullfile(resdirtotal, OptName, [OptName,'_settings.mat']));
 Set = d1.Set;
 Traj_W = d1.Traj;
@@ -42,7 +42,7 @@ fprintf('Platform diameter limits: %1.1fmm ... %1.1fmm\n', ...
 
 
 %% Get kinematic parameters of the robots
-datadir = fullfile(fileparts(which('ark_dimsynth_data_dir.m')),'data');
+datadir = fullfile(fileparts(which('ark3T2R_dimsynth_data_dir.m')),'data');
 tmp = load(fullfile(datadir, 'robot_groups.mat'));
 RobotGroups = tmp.RobotGroups;
 npkinminmax = NaN(1,2);

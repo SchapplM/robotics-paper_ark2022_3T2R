@@ -21,11 +21,11 @@ recalc_fitnessfcn = true; % Neuberechnung der Fitness-Funktion (optional)
 % posacc_sel = 40e-6;
 regenerate_templates = false; %#ok<*UNRCH> % nur bei erstem Aufruf notwendig.
 %% Sonstige Initialisierung
-if isempty(which('ark_dimsynth_data_dir'))
-  error(['You have to create a file ark_dimsynth_data_dir pointing to the ', ...
+if isempty(which('ark3T2R_dimsynth_data_dir'))
+  error(['You have to create a file ark3T2R_dimsynth_data_dir pointing to the ', ...
     'directory containing the results of the dimensional synthesis']);
 end
-importdir = ark_dimsynth_data_dir();
+importdir = ark3T2R_dimsynth_data_dir();
 datadir = fullfile(fileparts(which('select_eval_robot_examples.m')),'..','data');
 tmp = load(fullfile(datadir, 'results_all_reps_pareto.mat'));
 ResTab = tmp.ResTab_ges;
@@ -204,8 +204,8 @@ for i = 1:size(RobotGroups,1)
   if any(abs(test_fval(~kk1)) > 1e-5)
     warning(['Andere Zielfunktionen haben einen anderen Wert beim neu nachrechnen: ', ...
       '[%s] vs [%s]. Physikalisch: [%s] vs [%s]'], ...
-      disp_array(fval_i_test(~kk1),'%1.6e'), disp_array(fval(~kk1),'%1.6f'), ...
-      disp_array(physval_i_test(~kk1),'%1.3e'), disp_array(physval(~kk1),'%1.3e'));
+      disp_array(fval_i_test(~kk1)','%1.6e'), disp_array(fval(~kk1)','%1.6f'), ...
+      disp_array(physval_i_test(~kk1)','%1.3e'), disp_array(physval(~kk1)','%1.3e'));
   end
 
   %% Abschließende Berechnungen und Abspeichern

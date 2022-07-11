@@ -17,7 +17,7 @@ clear
 close all
 
 warning('off', 'Coder:MATLAB:rankDeficientMatrix'); % für invkin2
-datadir = fullfile(fileparts(which('ark_dimsynth_data_dir.m')),'data');
+datadir = fullfile(fileparts(which('ark3T2R_dimsynth_data_dir.m')),'data');
 tmp = load(fullfile(datadir, 'robot_groups.mat'));
 paperfigdir = fullfile(datadir, '..', 'paper', 'figures');
 RobotGroups = tmp.RobotGroups;

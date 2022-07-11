@@ -4,7 +4,7 @@
 % Moritz Schappler, moritz.schappler@imes.uni-hannover.de, 2022-01
 % (C) Institut für Mechatronische Systeme, Leibniz Universität Hannover
 
-function datadir = ark_dimsynth_data_dir()
+function datadir = ark3T2R_dimsynth_data_dir()
 %% Option 1: Stored result from the paper repository
 repopath = fileparts(which('ark_dimsynth_data_dir.m'));
 datadir = fullfile(repopath, 'data', 'synthesis');

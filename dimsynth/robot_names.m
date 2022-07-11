@@ -24,14 +24,15 @@
 clc
 clear
 
+usr_writemode = 'edit'; % Bearbeite bestehende Liste nachträglich (nicht immer alles neu ausführen)
 %% Definitionen
 outputdir = fileparts(which('robot_names.m'));
 datadir = fullfile(outputdir,'..','data');
-if isempty(which('ark_dimsynth_data_dir'))
-  error(['You have to create a file ark_dimsynth_data_dir pointing to the ', ...
+if isempty(which('ark3T2R_dimsynth_data_dir'))
+  error(['You have to create a file ark3T2R_dimsynth_data_dir pointing to the ', ...
     'directory containing the results of the dimensional synthesis']);
 end
-resdirtotal = ark_dimsynth_data_dir();
+resdirtotal = ark3T2R_dimsynth_data_dir();
 serroblibpath=fileparts(which('serroblib_path_init.m'));
 %% Öffnen der Ergebnis-Tabelle
 % (Wird in results_stack_tables.m erstellt)
@@ -39,10 +40,15 @@ tablepath = fullfile(datadir, 'results_all_reps_pareto.csv');
 ResTab = readtable(tablepath, 'ReadVariableNames', true);
 
 %% Generiere die Zeichenfolge für die Gelenkkette
+namestablepath = fullfile(datadir, 'robot_names_latex.csv');
 Robots = unique(ResTab.Name);
 ResTab_NameTrans = cell2table(cell(0,7), 'VariableNames', {'PKM_Name', ...
   'Gnum', 'Pnum', 'Chain_Name', 'ChainStructure', 'Chain_Structure_Act', 'Chain_ShortName'});
-for i = 1:length(Robots)
+if strcmp(usr_writemode, 'edit')
+  ResTab_NameTrans = readtable(namestablepath, 'Delimiter', ';');
+end
+
+for i = 1:length(Robots) % find(strcmp(Robots, 'P4RPRRR12V1G1P1A1'))
   RobName = Robots{i};
   fprintf('Bestimme Bezeichnung für Rob %d (%s)\n', i, RobName);
   parroblib_addtopath({RobName});
@@ -55,12 +61,34 @@ for i = 1:length(Robots)
   setfile = dir(fullfile(resdirtotal, OptName, '*settings.mat'));
   d1 = load(fullfile(resdirtotal, OptName, setfile(1).name));
   Set = cds_settings_update(d1.Set);
+  % Ergebnisse wurden ohne die Beschränkung auf symmetrische Schubzylinder
+  % generiert. Daher Option hier deaktivieren.
+  if ~isfield(d1.Set.optimization, 'joint_limits_symmetric_prismatic')
+    Set.optimization.joint_limits_symmetric_prismatic = false;
+  end
+  % Debug: Falls es Probleme mit der Reproduzierbarkeit vorheriger Ergebnisse gibt.
+%   Set.optimization.prismatic_cylinder_allow_overlength = true;
+%   % Ergebnisse wurden ohne neues Plattform-Kollisionsobjekt erzeugt. Deaktivieren
+%   Set.optimization.collshape_platform = {'ring'};
+  % Kollisionsprüfung für Bestimmung der Parallelität nicht notwendig
+  % (Kollisionen sollten eigentlich gleich bleiben bei Optimierung und
+  % hier)
+%   Set.optimization.constraint_collisions = false;
+
   resfile = fullfile(resdirtotal, OptName, ...
     sprintf('Rob%d_%s_Endergebnis.mat', LfdNr, RobName));
   tmp = load(resfile);
   if any(tmp.RobotOptRes.fval > 1e3)
     warning('PKM hat bereits in Optimierung nicht funktioniert. Hätte aussortiert werden müssen');
     continue
+  end
+  resfile2 = fullfile(resdirtotal, OptName, ...
+    sprintf('Rob%d_%s_Details.mat', LfdNr, RobName));
+  if exist(resfile2, 'file')
+    d2 = load(resfile2);
+    RobotOptDetails = d2.RobotOptDetails;
+  else
+    RobotOptDetails = [];
   end
   q0 = tmp.RobotOptRes.q0;
   PName = tmp.RobotOptRes.Structure.Name;
@@ -82,8 +110,17 @@ for i = 1:length(Robots)
     {'1','2','3','4','5'}, {'R','P','C','U','S'}));
   %% Roboter-Klasse initialisieren
   [R, Structure] = cds_dimsynth_robot(Set, d1.Traj, d1.Structures{LfdNr}, true);
+  % Anpassung für Programm-Aktualisierung seit Generierung der Ergebnisse
+  p_val_corr = cds_parameters_update(tmp.RobotOptRes.Structure, ...
+    Structure, tmp.RobotOptRes.p_val);
+  % Korrigiere den axoffset-Parameter für neue Implementierung; ab 22.04.22
+  if tmp.RobotOptRes.timestamps_start_end(1) < datenum(2022, 4, 22)
+    I_pmao = strcmp(Structure.varnames, 'platform_morph_axoffset');
+    I_pfr = Structure.vartypes == 7;
+    p_val_corr(I_pmao) = p_val_corr(I_pmao) * p_val_corr(I_pfr);
+  end
   % Parameter des Ergebnisses eintragen (für fkine-Berechnung unten)
-  cds_update_robot_parameters(R, Set, Structure, tmp.RobotOptRes.p_val);
+  cds_update_robot_parameters(R, Set, Structure, p_val_corr);
   % Gelenkwinkel des Startwerts für IK eintragen
   for kk = 1:R.NLEG
     R.Leg(kk).qref = q0(R.I1J_LEG(kk):R.I2J_LEG(kk));
@@ -104,12 +141,31 @@ for i = 1:length(Robots)
   Set.optimization.objective = {'condition'};
   Set.optimization.constraint_obj(:) = 0;
   
+  % Prüfe Kinematik-Parameter des Roboters aus den Detail-Ergebnis-Daten
+  % (zum Debuggen, falls die Parameter nicht passen sollten)
+  resfile2 = fullfile(resdirtotal, OptName, ...
+    sprintf('Rob%d_%s_Details.mat', LfdNr, RobName));
+  if exist(resfile2, 'file')
+    tmp2 = load(resfile2);
+    test_pkin = tmp2.RobotOptDetails.R.Leg(1).pkin - R.Leg(1).pkin;
+    assert(all(abs(test_pkin)<1e-10), 'Kinematikparameter sind bei erneutem Laden anders als bei erster Durchführung')
+  else
+    fprintf('Datei %s existiert nicht (kein Fehler). Test gegen Detail-Daten aus erster Durchführung nicht möglich\n', resfile2)
+  end
+
   % Debug: Bei Verletzung von Zielfunktionen Bilder zeichnen
+  % Set.general.plot_robot_in_fitness = -1e3;
   % Set.general.plot_details_in_fitness = -1e3;
   % Keine Eingabe von Ergebnissen von Entwufsoptimierung.
   % Schubgelenk-Offsets hier neu berechnen (falls Konfiguration umklappt)
-  [fval_i_test, ~, Q] = cds_fitness(R, Set,d1.Traj, ...
-    Structure_tmp, tmp.RobotOptRes.p_val, tmp.RobotOptRes.desopt_pval);
+  Set.optimization.pos_ik_tryhard_num = 50; % bessere Reproduzierbarkeit in IK
+  [fval_i_test, ~, Q] = cds_fitness(R, Set, d1.Traj, ...
+    Structure_tmp, p_val_corr, tmp.RobotOptRes.desopt_pval);
+  if any(abs(Q(1,:)'-q0) > 1e-3)
+    % Debug: Zeichne ursprüngliche Konfiguration
+%     Set.general.plot_robot_in_fitness = -1e3;
+%     cds_fitness_debug_plot_robot(R, q0, [], d1.Traj, Set, Structure_tmp, p_val_corr, inf, '');
+  end
   if any(fval_i_test > 1e3)
     % Eigentlich darf dieser Fall nicht vorkommen. Ist aber aus numerischen
     % Gründen leider doch manchmal möglich.
@@ -163,11 +219,22 @@ for i = 1:length(Robots)
         pgroups_all(k, jj) = max(pgroups_all(k, 1:jj-1)) + 1; % Neue Gruppe
       end
     end
+    if k > 1 && any(pgroups_all(k-1,:) ~= pgroups_all(k,:))
+      fprintf('Parallelität ändert sich in Zeitschritt %d (kein Fehler)\n', k);
+      Set.general.plot_robot_in_fitness = -1e3;
+      cds_fitness_debug_plot_robot(R, Q(k,:)', [], d1.Traj, Set, Structure_tmp, p_val_corr, inf, '');
+    end
   end
   if any(any(diff(pgroups_all)))
-    error('Die Parallelität ändert sich im Zeitverlauf. Darf nicht sein.');
+    warning('Die Parallelität ändert sich im Zeitverlauf. Sollte nicht sein.');
+    % Kann passieren, wenn Drehgelenke parallel zu einem Schubgelenk werden
+    % Nehme den allgemeineren Fall mit mehr unterschiedlichen Gruppen
+    I_maxdiv = max(pgroups_all, [], 2);
+    pgroups = pgroups_all(find(I_maxdiv,1,'first'),:);
+  else
+    % Keine Änderung der Parallelität. Nehme die Gruppen vom ersten Fall.
+    pgroups = pgroups_all(1,:);
   end
-  pgroups = pgroups_all(1,:);
 
   %% Zeichenkette generieren. Siehe Kong/Gosselin 2007, S.10
   % Variablen mit Latex-Code für Roboter-Namen
@@ -205,11 +272,15 @@ for i = 1:length(Robots)
   % In Tabelle speichern
   Gnum = d1.Structures{LfdNr}.Coupling(1);
   Pnum = d1.Structures{LfdNr}.Coupling(2);
+  I_found = strcmp(ResTab_NameTrans.RobName, RobName);
   Row_i = {RobName, Gnum, Pnum, Chain_Name, Chain_StructName, Chain_StructNameAct, SName_TechJoint};
-  ResTab_NameTrans = [ResTab_NameTrans; Row_i]; %#ok<AGROW>
+  if any(I_found) % eintragen
+    ResTab_NameTrans(I_found,:) = Row_i;
+  else % anhängen
+    ResTab_NameTrans = [ResTab_NameTrans; Row_i]; %#ok<AGROW>
+  end
 end
 
 %% Speichere das wieder ab
-namestablepath = fullfile(datadir, 'robot_names_latex.csv');
 writetable(ResTab_NameTrans, namestablepath, 'Delimiter', ';');
 fprintf('Tabelle %s geschrieben\n', namestablepath);

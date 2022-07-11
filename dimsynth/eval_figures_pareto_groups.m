@@ -17,6 +17,8 @@
 clc
 clear
 close all
+
+usr_mode = 'paper'; % alternatives: paper/presentation
 %% Initialisierung
 this_dir = fileparts(which('eval_figures_pareto_groups.m'));
 addpath(fullfile(this_dir, '..'));
@@ -24,9 +26,9 @@ addpath(fullfile(this_dir, '..'));
 ps = 1; % muss konsistent zu eval_figure_pareto sein
 if ps ==  1, pareto_settings = {'chainlength', 'condition'}; end
 
-resdirtotal = ark_dimsynth_data_dir();
+resdirtotal = ark3T2R_dimsynth_data_dir();
 outputdir =this_dir;
-datadir = fullfile(fileparts(which('ark_dimsynth_data_dir.m')),'data');
+datadir = fullfile(fileparts(which('ark3T2R_dimsynth_data_dir.m')),'data');
 paperfigdir = fullfile(outputdir, '..', 'paper', 'figures');
 % Namen der Roboter laden (enthält auch Eigenschaften zu Kardan-Gelenken)
 namestablepath = fullfile(datadir, 'robot_names_latex.csv');
@@ -64,7 +66,7 @@ I_iO = ResTab_ges.Fval_Opt < 1e3;
 % Betrachte nur Optimierungsläufe mit passender Zielfunktion
 I_objmatch = contains(ResTab_ges.Zielfunktion,pareto_settings{1}) & ...
              contains(ResTab_ges.Zielfunktion,pareto_settings{2});
-change_current_figure(10);clf; hold all;
+fighdl = change_current_figure(10);clf; hold all;
 leghdl = [];
 legstr = {};
 countrob = 0;
@@ -140,7 +142,12 @@ for i = 1:size(RobotGroups,1)
     % Index der Roboter, die Isomorphismen des aktuellen darstellen.
     % Nur sinnvoll, wenn aktueller Roboter ein allgemeiner Typ ist.
     Ir_this = strcmp(ResTab_NameTrans.PKM_Name, RobName); % Index in Namens-Tabelle
-    ChainName = ResTab_NameTrans.Chain_Name{Ir_this};
+    if ~any(Ir_this)
+      warning('Kein Robotername für Legende zu %s abgelegt', RobName);
+      ChainName = RobName;
+    else
+      ChainName = ResTab_NameTrans.Chain_Name{Ir_this};
+    end
     % Lade Daten der Beinkette
     serroblibpath=fileparts(which('serroblib_path_init.m'));
     NLJ = str2double(ChainName(2));
@@ -371,12 +378,12 @@ for i = 1:size(RobotGroups,1)
   leghdl(countrob) = hdl; %#ok<SAGROW>
   legstr{countrob} = sprintf('%s; %d Wdh.', GroupName, numrep_i); %#ok<SAGROW>
 end
-set(10, 'numbertitle', 'off');
+set(fighdl, 'numbertitle', 'off');
 title(sprintf('Pareto-Front %s vs %s (Fitness-Werte physikalisch)', pareto_settings{1}, pareto_settings{2}));
 lh = legend(leghdl, legstr);
-set(10, 'name', sprintf('pareto_groups_%s_%s', pareto_settings{1}(1:4), pareto_settings{2}(1:4)));
-saveas(10, fullfile(outputdir, sprintf('figure_pareto_groups_%s_%s.fig', pareto_settings{1}, pareto_settings{2})));
-export_fig(10, fullfile(outputdir, sprintf('figure_pareto_groups_%s_%s.pdf', pareto_settings{1}, pareto_settings{2})));
+set(fighdl, 'name', sprintf('pareto_groups_%s_%s', pareto_settings{1}(1:4), pareto_settings{2}(1:4)));
+saveas(fighdl, fullfile(outputdir, sprintf('figure_pareto_groups_%s_%s.fig', pareto_settings{1}, pareto_settings{2})));
+export_fig(fighdl, fullfile(outputdir, sprintf('figure_pareto_groups_%s_%s.pdf', pareto_settings{1}, pareto_settings{2})));
 
 %% Gruppen abspeichern
 save(fullfile(datadir, 'robot_groups.mat'), 'RobotGroups');
@@ -393,7 +400,11 @@ for i = 1:size(RobotGroups,1)
   grrow{1} = RobotGroups{i,1};
   % Suche den verkürzten Namen der kinematischen Kette
   I = strcmp(ResTab_NameTrans.PKM_Name, RobotGroups{i,2}{1});
-  grrow(2) = ResTab_NameTrans.Chain_ShortName(I);
+  if any(I)
+    grrow(2) = ResTab_NameTrans.Chain_ShortName(I);
+  else
+    grrow{2} = 'NOT FOUND';
+  end
   for j = 1:length(RobotGroups{i,2})
     grrow{2+j} = RobotGroups{i,2}{1};
   end
@@ -441,22 +452,33 @@ title('');
 if ps == 1 % Manuell einstellen
 %   axis auto
   set(gca, 'yscale', 'log');
-  xlim([9.5, 33]);
-  ylim([40, 1e5]);
+  xlim([9.0, 33]);
+  ylim([9, 1e5]);
 else
   error('Value for ps not set yet');
 end
 grid on
 figure_format_publication(gca);
-set_size_plot_subplot(10, ...
-  11.6,4.5,gca,...
-  0.08,0.005,0.04,0.10,0,0)
-
+if strcmp(usr_mode, 'presentation')
+  set_font_fontsize(fighdl, 'times', 12);
+end
+if strcmp(usr_mode, 'paper')
+  set_size_plot_subplot(fighdl, ...
+    11.6,4.5,gca,...
+    0.08,0.005,0.04,0.10,0,0);
+else % presentation
+  set_size_plot_subplot(fighdl, ...
+    16,8,gca,...
+    0.08,0.005,0.04,0.10,0,0);
+end
 lh = legend(leghdl, legstr2, 'interpreter', 'latex');
 % Move legend manually and obtain position by `get(lh, 'position')`. Then
 % set these values below
-set(lh, 'Position', [0.4983    0.1977    0.3472    0.7114]); % Achtung: Sieht manchmal in PDF anders aus als in Plot
-
+if strcmp(usr_mode, 'paper')
+  set(lh, 'Position', [0.4983    0.1977    0.3472    0.7114]); % Achtung: Sieht manchmal in PDF anders aus als in Plot
+else
+  set(lh, 'Position', [0.6363    0.1653    0.3470    0.7777]);
+end
 % Ziehe die x-Beschriftung etwas nach oben und entferne dort die Ticklabel
 xtl = get(gca, 'xticklabel');
 xtl(3:4) = {''};
@@ -474,10 +496,15 @@ xlpos(2) = Y_off*Y_slope^(-1/2+0.5-0.02);
 set(xlhdl, 'Position', xlpos);
 
 % Speichern und Abschluss
-name = sprintf('paperfigure_pareto_groups_%s_%s', pareto_settings{1}, pareto_settings{2});
-saveas(10, fullfile(outputdir, sprintf('%s.fig', name)));
-export_fig(10, fullfile(outputdir, sprintf('%s.pdf', name)));
-export_fig(10, fullfile(paperfigdir, 'pareto_all.pdf'));
+name = sprintf('%sfigure_pareto_groups_%s_%s', usr_mode, pareto_settings{1}, pareto_settings{2});
+saveas(fighdl, fullfile(outputdir, sprintf('%s.fig', name)));
+export_fig(fighdl, fullfile(outputdir, sprintf('%s.pdf', name)));
+if strcmp(usr_mode, 'presentation')
+  exportgraphics(fighdl, fullfile(outputdir, sprintf('%s.png', name)), 'Resolution','800');
+else
+  export_fig(fighdl, fullfile(paperfigdir, 'pareto_all.pdf'));
+end
+
 fprintf('Auswertung %s gespeichert\n', name);
 % Vergrößerung zusätzlich speichern. In einem Bereich ist es zu
 % teilweise zu unübersichtlich (nicht mehr genutzt).
@@ -490,12 +517,12 @@ if ps == 11
 else
   error('Value for ps not set yet');
 end
-set_size_plot_subplot(10, ...
+set_size_plot_subplot(fighdl, ...
   4,4,gca,...
   0.10,0.02,0.02,0.12,0,0)
 name = sprintf('paperfigure_pareto_groups_%s_%s_detail', pareto_settings{1}, pareto_settings{2});
-saveas(10, fullfile(outputdir, sprintf('%s.fig', name)));
-export_fig(10, fullfile(outputdir, sprintf('%s.pdf', name)));
-export_fig(10, fullfile(paperfigdir, 'pareto_all_detail.pdf'));
+saveas(fighdl, fullfile(outputdir, sprintf('%s.fig', name)));
+export_fig(fighdl, fullfile(outputdir, sprintf('%s.pdf', name)));
+export_fig(fighdl, fullfile(paperfigdir, 'pareto_all_detail.pdf'));
 
 

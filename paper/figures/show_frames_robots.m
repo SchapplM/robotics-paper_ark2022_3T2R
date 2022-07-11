@@ -7,12 +7,12 @@
 clc
 clear
 
-repodir = fileparts(which('ark_dimsynth_data_dir'));
+repodir = fileparts(which('ark3T2R_dimsynth_data_dir'));
 if isempty(repodir)
-  error(['You have to create a file ark_dimsynth_data_dir pointing to the ', ...
+  error(['You have to create a file ark3T2R_dimsynth_data_dir pointing to the ', ...
     'directory containing the results of the dimensional synthesis']);
 end
-resdirtotal = ark_dimsynth_data_dir();
+resdirtotal = ark3T2R_dimsynth_data_dir();
 datadir = fullfile(repodir,'data');
 tablepath = fullfile(datadir, 'results_all_reps_pareto.csv');
 ResTab = readtable(tablepath, 'ReadVariableNames', true);

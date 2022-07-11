@@ -21,14 +21,14 @@ this_dir = fileparts(which('eval_figures_pareto.m'));
 addpath(fullfile(this_dir, '..'));
 
 outputdir = this_dir;
-datadir = fullfile(fileparts(which('ark_dimsynth_data_dir.m')),'data');
+datadir = fullfile(fileparts(which('ark3T2R_dimsynth_data_dir.m')),'data');
 mkdirs(datadir);
 
-if isempty(which('ark_dimsynth_data_dir'))
-  error(['You have to create a file ark_dimsynth_data_dir pointing to the ', ...
+if isempty(which('ark3T2R_dimsynth_data_dir'))
+  error(['You have to create a file ark3T2R_dimsynth_data_dir pointing to the ', ...
     'directory containing the results of the dimensional synthesis']);
 end
-resdirtotal = ark_dimsynth_data_dir();
+resdirtotal = ark3T2R_dimsynth_data_dir();
 
 ps = 1; % Auch andere Kombinationen von Kriterien möglich
 % Mögliche Zielkriterien: condition, actforce, jointrange, energy
@@ -38,8 +38,23 @@ if ps ==  1, pareto_settings = {'chainlength', 'condition'}; end
 % Namensschema: Siehe dimsynth/config_pareto.m
 % Ergebnis-Ordner müssen im Datenverzeichnis liegen (entweder Offline-Aus-
 % wertung oder neue Maßsynthese).
-resdirs = {'ARK_3T2R_20220114_plfmorph'};
-
+% Auswertung für publizierte Version des Papers
+% resdirs = {'ARK_3T2R_20220114_plfmorph'};
+% Ausprobieren anderer Optimierungsergebnisse
+resdirs = cell(16,1);
+n = 0;
+for i = 1:5
+  n=n+1;resdirs{n} = sprintf('ARK_3T2R_20220611_usenoold_rep%d', i);
+end
+for i = 1:3
+  n=n+1;resdirs{n} = sprintf('ARK_3T2R_20220611_useold_rep%d', i);
+end
+for i = 1:5
+  n=n+1;resdirs{n} = sprintf('ARK_3T2R_20220613_collsphere_v2_rep%d', i);
+end
+for i = 1:3
+  n=n+1;resdirs{n} = sprintf('ARK_3T2R_20220613_collsphere_v3_rep%d', i);
+end
 for i = 1:length(resdirs)
   tablepath = fullfile(resdirtotal, resdirs{i}, sprintf('%s_results_table.csv', resdirs{i}));
   % Finde die Zielfunktionen heraus (Auslesen der ersten Einstellungsdatei
@@ -71,16 +86,31 @@ for i = 1:length(resdirs)
     ResTab_ges = [ResTab_ges; ResTab_i(I_select,:)]; %#ok<AGROW>
   end
 end
+
+Robots = unique(ResTab_ges.Name);
+% Filter bestimmte Robotertypen heraus (wurden teilweise versehentlich gestartet)
+Robots = Robots(~contains(Robots, 'G2'));
+Robots = Robots(~contains(Robots, 'G3'));
+% Filtere Roboter heraus, die aufgrund von Isomorphismen gelöscht wurden
+[~, PNames_Akt] = parroblib_filter_robots(logical([1 1 1 1 1 0]), 0);
+Robots = intersect(Robots, PNames_Akt);
+
+% Speichere Gesamt-Tabelle ohne die ausgefilterten Roboter
+I_sel = true(size(ResTab_ges,1),1);
+for i = 1:size(ResTab_ges,1)
+  if ~any(strcmp(ResTab_ges.Name{i}, Robots))
+    I_sel(i) = false;
+  end
+end
+ResTab_ges = ResTab_ges(I_sel,:);
+
 writetable(ResTab_ges, fullfile(datadir, 'results_all_reps_pareto.csv'), ...
   'Delimiter', ';');
 save(fullfile(datadir, 'results_all_reps_pareto.mat'), 'ResTab_ges');
 %% Alle Roboter einzeln durchgehen
 markerlist = {'x', 's', 'v', '^', '*', 'o'};
 colorlist =  {'r', 'g', 'b', 'c', 'm', 'k'};
-Robots = unique(ResTab_ges.Name);
-% Filter bestimmte Robotertypen heraus (wurden teilweise versehentlich gestartet)
-Robots = Robots(~contains(Robots, 'G2'));
-Robots = Robots(~contains(Robots, 'G3'));
+
 
 I_robleg = false(length(Robots), 1);
 % Betrachte nur Optimierungsläufe mit i.O.-Ergebnis
@@ -124,8 +154,11 @@ for i = 1:length(Robots)
     OptName = ResTab_ges.OptName{II_Robi(j)};
     LfdNr = ResTab_ges.LfdNr(II_Robi(j));
     resfile = fullfile(resdirtotal, OptName, sprintf('Rob%d_%s_Endergebnis.mat', LfdNr, RobName));
+    setfile = fullfile(resdirtotal, OptName, sprintf('%s_settings.mat', OptName));
     tmp = load(resfile);
     RobotOptRes_j = tmp.RobotOptRes;
+    tmp = load(setfile);
+    Set_i = tmp.Set;
     kk1 = find(strcmp(Set_i.optimization.objective, pareto_settings{1}));
     kk2 = find(strcmp(Set_i.optimization.objective, pareto_settings{2}));
     % Wähle nur Durchläufe, bei denen nur die gewählten Kriterien für
@@ -162,7 +195,8 @@ for i = 1:length(Robots)
     sprintf('%s_paretofront.csv', RobName)), 'Delimiter', ';');
   %% Zeichne die Ergebnisse in das Bild ein
   % Bild mit Zielfunktionswerten
-  [obj_units, objscale] = cds_objective_plotdetails(Set_i);
+  [obj_units, objscale] = cds_objective_plotdetails(struct('optimization', ...
+    struct('objective', {pareto_settings})));
   change_current_figure(10*ps+1); hold on;
 
   hdl(1)=plot(pf_data_fval(:,1), pf_data_fval(:,2), marker);
